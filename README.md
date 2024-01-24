@@ -34,17 +34,12 @@ class CustomNode(nodes.Node):
         for i in range(0, 500):
             sindatax.append(i / 1000)
             sindatay.append(0.5 + 0.5 * math.sin(50 * i / 1000))
-
+        
         with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Static, parent=self.tag) as attr:
             with dpg.plot(label="Line Series", height=400, width=400):
-                # optionally create legend
                 dpg.add_plot_legend()
-
-                # REQUIRED: create x and y axes
                 dpg.add_plot_axis(dpg.mvXAxis, label="x")
                 dpg.add_plot_axis(dpg.mvYAxis, label="y", tag="y_axis")
-
-                # series belong to a y axis
                 dpg.add_line_series(sindatax, sindatay, label="0.5 + 0.5 * sin(x)", parent="y_axis")
 
         self.output_action_attribute()
@@ -63,6 +58,8 @@ dpg.set_primary_window("Primary Window", True)
 dpg.start_dearpygui()
 dpg.destroy_context()
 ```
+
+![img.png](img/img.png)
 
 ## Description
 A library that allows you to make a code editor on the basis of Node Editor. It is possible to add custom nodes, with their own code, which they will execute. All this is based on the main [DearPyGui](https://dearpygui.readthedocs.io/en/latest/index.html) library
