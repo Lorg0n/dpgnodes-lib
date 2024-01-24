@@ -9,7 +9,59 @@ pip install git+https://github.com/Lorg0n/dpgnodes-lib/
 
 ## Usage
 ```python
--- asdasd
+import math
+
+import dearpygui.dearpygui as dpg
+import dpgnodes as nodes
+
+dpg.create_context()
+
+
+class CustomNode(nodes.Node):
+    LABEL_NAME = "Custom Node"
+    CATEGORY_NAME = "Customs"
+
+    def __init__(self, node_list: [], link_list: [], parent=None):
+        super().__init__(self.CATEGORY_NAME, self.LABEL_NAME, parent, node_list, link_list)
+        self.create()
+        node_list.append(self)
+
+    def create(self):
+        self.input_action_attribute()
+
+        sindatax = []
+        sindatay = []
+        for i in range(0, 500):
+            sindatax.append(i / 1000)
+            sindatay.append(0.5 + 0.5 * math.sin(50 * i / 1000))
+
+        with dpg.node_attribute(attribute_type=dpg.mvNode_Attr_Static, parent=self.tag) as attr:
+            with dpg.plot(label="Line Series", height=400, width=400):
+                # optionally create legend
+                dpg.add_plot_legend()
+
+                # REQUIRED: create x and y axes
+                dpg.add_plot_axis(dpg.mvXAxis, label="x")
+                dpg.add_plot_axis(dpg.mvYAxis, label="y", tag="y_axis")
+
+                # series belong to a y axis
+                dpg.add_line_series(sindatax, sindatay, label="0.5 + 0.5 * sin(x)", parent="y_axis")
+
+        self.output_action_attribute()
+
+    def eval(self):
+        print('WOW!')
+
+
+with dpg.window(tag="Primary Window"):
+    nodes.code_node_editor()
+
+dpg.create_viewport(title='Custom Nodes', width=600, height=200)
+dpg.setup_dearpygui()
+dpg.show_viewport()
+dpg.set_primary_window("Primary Window", True)
+dpg.start_dearpygui()
+dpg.destroy_context()
 ```
 
 ## Description
