@@ -1,3 +1,4 @@
+import json
 import threading
 import time
 
@@ -65,7 +66,7 @@ class Node:
         self.__label = label
         self.__parent = parent
         self.__out_action_item = None
-        self.__attributes = []
+        self.__attributes = {}
 
         self.__node_list = node_list
         self.__link_list = link_list
@@ -82,6 +83,25 @@ class Node:
             for link in links:
                 to_node = link.b_parent_node
                 to_node.eval()
+
+    def get_attribute(self, key: str):
+        item = self.__attributes[key]
+
+        info = im.get_item_info(item)
+        if info['type'] == 'mvAppItemType::mvNodeAttribute':
+            links = find_link(self.__link_list, b=item)
+
+            if len(links) > 0:
+                links[0].a_parent_node.eval()
+                return im.get_item_children(links[0].a)[1][0]
+            else:
+                children = info['children'][1][0]
+                return children
+
+        return item
+
+    def set_attribute(self, key: str, value):
+        self.__attributes[key] = value
 
     def input_action_attribute(self):
         with im.node_attribute(attribute_type=im.mvNode_Attr_Input, shape=im.mvNode_PinShape_TriangleFilled,
@@ -124,17 +144,51 @@ class SleepNode(Node):
         self.input_action_attribute()
 
         with im.node_attribute(attribute_type=im.mvNode_Attr_Input, filter_key=LinkType.NUM, parent=self.tag) as attr:
-            im.add_text("Time")
+            self.set_attribute('time_attr', attr)
+            self.set_attribute('time_value', im.add_input_double(label="Time", width=150, default_value=2.0))
 
         self.output_action_attribute()
 
     def eval(self):
-        def f():
-            time.sleep(3.0)
+        def func():
+            value = float(im.get_value(self.get_attribute('time_attr')))
+            im.set_value(self.get_attribute('time_value'), value)
+            time.sleep(value)
             self.run_next_node()
 
-        t = threading.Thread(target=f)
+        t = threading.Thread(target=func)
         t.start()
+
+
+class AddNode(Node):
+    LABEL_NAME = "Add Node"
+    CATEGORY_NAME = "Math"
+
+    def __init__(self, node_list: [], link_list: [], parent=None):
+        super().__init__(self.CATEGORY_NAME, self.LABEL_NAME, parent, node_list, link_list)
+        self.create()
+        node_list.append(self)
+
+    def create(self):
+        with im.node_attribute(attribute_type=im.mvNode_Attr_Input, filter_key=LinkType.NUM, parent=self.tag) as attr:
+            self.set_attribute('a_attr', attr)
+            self.set_attribute('a_item', im.add_input_double(label="A", width=120))
+
+        with im.node_attribute(attribute_type=im.mvNode_Attr_Input, filter_key=LinkType.NUM, parent=self.tag) as attr:
+            self.set_attribute('b_attr', attr)
+            self.set_attribute('b_item', im.add_input_double(label="B", width=120))
+
+        with im.node_attribute(attribute_type=im.mvNode_Attr_Output, filter_key=LinkType.NUM, parent=self.tag,
+                               user_data=json.dumps({
+                                   'value': 0
+                               })) as attr:
+            self.set_attribute('summ_attr', attr)
+            self.set_attribute('summ_item', im.add_text("Summ of A and B"))
+
+    def eval(self):
+        a = im.get_value(self.get_attribute('a_attr'))
+        b = im.get_value(self.get_attribute('b_attr'))
+        im.set_value(self.get_attribute('summ_attr'), a + b)
 
 
 class PrintNode(Node):
@@ -150,12 +204,12 @@ class PrintNode(Node):
         self.input_action_attribute()
 
         with im.node_attribute(attribute_type=im.mvNode_Attr_Input, filter_key=LinkType.NUM, parent=self.tag) as attr:
-            im.add_input_text(label="Text", width=150)
+            self.set_attribute('text_item', im.add_input_text(label="Text", width=150))
 
         self.output_action_attribute()
 
     def eval(self):
-        print('test')
+        print(im.get_value(self.get_attribute('text_item')))
         self.run_next_node()
 
 
@@ -209,13 +263,6 @@ class __NodeEditor:
             StartNode(node_list=self.node_list, link_list=self.link_list)
 
     def start_callback(self):
-        # print("-----------------------\n[LINKS]")
-        # for l in self.link_list:
-        #     print(f"- LINK(parent: a = {l.a_parent}, b = {l.b_parent}; link_id: {l.link_id})")
-        # print("\n[NODES]")
-        # for n in self.node_list:
-        #     print(f"- NODE(tag: {n.tag})")
-
         for node in self.node_list:
             if node.__class__ == StartNode:
                 node.eval()
