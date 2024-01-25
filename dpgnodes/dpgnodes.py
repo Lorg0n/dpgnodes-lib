@@ -209,7 +209,10 @@ class PrintNode(Node):
         self.output_action_attribute()
 
     def eval(self):
-        print(im.get_value(self.get_attribute('text_item')))
+        import datetime
+        now = datetime.datetime.now()
+        time_string = now.strftime("%H:%M:%S")
+        print(f'[{time_string}] {im.get_value(self.get_attribute("text_item"))}')
         self.run_next_node()
 
 

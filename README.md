@@ -1,6 +1,7 @@
 # dpgnodes
 
 A library that allows you to make a code editor on the basis of Node Editor. It is possible to add custom nodes, with their own code, which they will execute.
+![preview.png](img/preview.gif)
 
 ## Installing
 ```
@@ -58,7 +59,6 @@ dpg.set_primary_window("Primary Window", True)
 dpg.start_dearpygui()
 dpg.destroy_context()
 ```
-
 ![img.png](img/img.png)
 
 ## Description
