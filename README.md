@@ -1,6 +1,6 @@
 # dpgnodes
 
-A library that allows you to make a code editor on the basis of Node Editor. It is possible to add custom nodes, with their own code, which they will execute.
+My library is an extension of the dearpygui core library. It allows you to create a code editor based on the Node Editor. You can add custom nodes with their own code that they will execute.
 ![preview.png](img/preview.gif)
 
 ## Installing
